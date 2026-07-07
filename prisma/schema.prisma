@@ -1,0 +1,191 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Roles: SUPER_ADMIN | ADMIN | TEACHER | PARENT (SQLite has no enums)
+
+model Center {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  address       String?
+  city          String
+  country       String
+  latitude      Float
+  longitude     Float
+  calcMethod    Int      @default(2) // AlAdhan calculation method id
+  createdAt     DateTime @default(now())
+
+  users         User[]
+  students      Student[]
+  classes       ClassRoom[]
+  announcements Announcement[]
+  events        Event[]
+  invoices      Invoice[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String // SUPER_ADMIN | ADMIN | TEACHER | PARENT
+  centerId     String?
+  center       Center?  @relation(fields: [centerId], references: [id])
+  createdAt    DateTime @default(now())
+
+  children        Student[]            @relation("ParentChildren")
+  classesTaught   ClassRoom[]          @relation("ClassTeacher")
+  sessions        Session[]
+  announcements   Announcement[]
+  progressRecords ProgressRecord[]     @relation("ProgressTeacher")
+  behaviorNotes   BehaviorNote[]       @relation("BehaviorAuthor")
+  permissionResponses PermissionResponse[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Student {
+  id           String    @id @default(cuid())
+  firstName    String
+  lastName     String
+  gender       String // MALE | FEMALE
+  dateOfBirth  DateTime?
+  medicalNotes String?
+  centerId     String
+  center       Center    @relation(fields: [centerId], references: [id])
+  parentId     String?
+  parent       User?     @relation("ParentChildren", fields: [parentId], references: [id])
+  classId      String?
+  class        ClassRoom? @relation(fields: [classId], references: [id])
+  createdAt    DateTime  @default(now())
+
+  attendance  AttendanceRecord[]
+  invoices    Invoice[]
+  progress    ProgressRecord[]
+  behavior    BehaviorNote[]
+  permissions PermissionResponse[]
+}
+
+model ClassRoom {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  schedule    String? // e.g. "Sat & Sun 10:00–12:00"
+  centerId    String
+  center      Center  @relation(fields: [centerId], references: [id])
+  teacherId   String?
+  teacher     User?   @relation("ClassTeacher", fields: [teacherId], references: [id])
+
+  students   Student[]
+  attendance AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id        String   @id @default(cuid())
+  date      String // YYYY-MM-DD
+  status    String // PRESENT | ABSENT | LATE | EXCUSED
+  note      String?
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classId   String
+  class     ClassRoom @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([studentId, classId, date])
+}
+
+model Invoice {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  amountCents   Int
+  dueDate       DateTime
+  status        String    @default("PENDING") // PENDING | PAID
+  paidAt        DateTime?
+  paymentMethod String?
+  studentId     String
+  student       Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  centerId      String
+  center        Center    @relation(fields: [centerId], references: [id])
+  createdAt     DateTime  @default(now())
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  audience  String   @default("ALL") // ALL | PARENTS | TEACHERS
+  centerId  String
+  center    Center   @relation(fields: [centerId], references: [id])
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id                 String   @id @default(cuid())
+  title              String
+  description        String?
+  location           String?
+  startsAt           DateTime
+  requiresPermission Boolean  @default(false)
+  centerId           String
+  center             Center   @relation(fields: [centerId], references: [id])
+  createdAt          DateTime @default(now())
+
+  responses PermissionResponse[]
+}
+
+model PermissionResponse {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  granted       Boolean
+  respondedById String
+  respondedBy   User     @relation(fields: [respondedById], references: [id])
+  respondedAt   DateTime @default(now())
+
+  @@unique([eventId, studentId])
+}
+
+model ProgressRecord {
+  id        String   @id @default(cuid())
+  date      String // YYYY-MM-DD
+  type      String // HIFZ | TILAWAH | ISLAMIC_STUDIES | ARABIC
+  surah     String?
+  ayahFrom  Int?
+  ayahTo    Int?
+  grade     String // EXCELLENT | GOOD | SATISFACTORY | NEEDS_IMPROVEMENT
+  notes     String?
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId String
+  teacher   User     @relation("ProgressTeacher", fields: [teacherId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model BehaviorNote {
+  id        String   @id @default(cuid())
+  type      String // POSITIVE | NEUTRAL | NEGATIVE
+  note      String
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("BehaviorAuthor", fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
