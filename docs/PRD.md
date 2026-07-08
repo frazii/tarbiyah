@@ -93,7 +93,10 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
   (v1: simulated instant payment, clearly labelled as demo).
 - **FR-19 (P0)** Admins can record offline payments ("mark paid") and see outstanding
   totals; overdue invoices are flagged.
-- **FR-20 (P1)** Real payment gateway (Stripe), receipts, partial payments, family discounts.
+- **FR-20 (P1)** Real payment gateway — **Stripe** (decided 8 Jul 2026): checkout per
+  invoice, receipts, webhook-driven status updates; per-center Stripe account (Connect).
+- **FR-20a (P1)** Per-center currency (decided 8 Jul 2026): each center configures its
+  currency (AUD, GBP, USD, PKR…); all invoices and totals for that center display in it.
 
 ### 4.6 Progress (academic reports, Islamic-native)
 - **FR-21 (P0)** Staff record progress per student: date, type (Hifz / Tilawah / Islamic
@@ -111,7 +114,9 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
 ### 4.8 Announcements
 - **FR-25 (P0)** Staff publish announcements with audience targeting: everyone, parents
   only, teachers only. Audience filtering enforced on read.
-- **FR-26 (P1)** Email/SMS/push fan-out; per-class targeting.
+- **FR-26 (P1)** Outbound fan-out — **email first** (decided 8 Jul 2026): announcements,
+  absence alerts and invoice notices by email; SMS/push deferred until after email ships.
+  Per-class targeting alongside.
 
 ### 4.9 Events & permission slips
 - **FR-27 (P0)** Staff create events (title, description, location, date/time) and flag
@@ -176,8 +181,9 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
 
 ## 8. Roadmap (beyond v1)
 
-1. **Payments v2** — Stripe checkout, receipts, sibling discounts.
-2. **Outbound communication** — email digests, SMS absence alerts, web push.
+1. **Payments v2** — Stripe checkout + per-center currency (FR-20/20a), receipts,
+   sibling discounts.
+2. **Outbound communication** — email first (FR-26); SMS absence alerts and web push later.
 3. **Reports** — attendance analytics, printable hifz term reports, juz' coverage map.
 4. **Forms module** — generic response-required forms (School Bytes parity).
 5. **Calendar view** — month grid combining events, class schedules and Islamic dates.
@@ -185,10 +191,20 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
 7. **Student portal** — read-only progress and sabaq for older students.
 8. **Postgres + hosted deployment** — multi-center SaaS with per-center subdomains.
 
-## 9. Open questions
+## 9. Decisions log
 
-- Should parents be able to self-register and request linking to a center, or remain
-  admin-invited only (current)?
-- Fee currency is display-USD; centers will need per-center currency configuration.
+Resolved 8 Jul 2026 (product owner):
+
+| Question | Decision |
+| --- | --- |
+| Payment processing | **Stripe integration** (FR-20) — real checkout with receipts; per-center accounts |
+| Parent onboarding | **Admin-invited only** — current behavior confirmed; no self-registration in scope |
+| First outbound channel | **Email** (FR-26) — SMS and web push deferred until email ships |
+| Currency | **Per-center currency** (FR-20a) — configured on the center, drives all money display |
+
+## 10. Open questions
+
 - Hijri date is sourced from AlAdhan; do centers need a manual ±1 day moon-sighting offset?
 - Data retention/export obligations per country of operation.
+- Stripe: platform-level account with Connect for centers, or each center brings its own
+  Stripe keys?
