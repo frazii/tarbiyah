@@ -12,6 +12,7 @@ See [docs/DISCOVERY.md](docs/DISCOVERY.md) for the R&D on School Bytes and how e
 - **Roles** — Super Admin, Center Admin, Teacher (Ustadh/Ustadha), Parent
 - **Students & classes** — enrolment, rosters, teachers, schedules, medical notes
 - **Attendance** — one-tap roll marking (present / absent / late / excused) with notes and history
+- **Absence notices & calendar** — parents report upcoming absences (date range + reason); the roll pre-fills *Excused* with the reason, and each student profile shows a month calendar of attendance
 - **Fees** — invoices per student, parent "pay now" (demo), admin payment recording, outstanding totals
 - **Progress** — hifz by surah/ayah, tilawah, Islamic studies and Arabic grades, shared with parents
 - **Akhlaq / behaviour notes** — positive, neutral, negative records

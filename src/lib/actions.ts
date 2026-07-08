@@ -107,6 +107,31 @@ export async function saveAttendance(formData: FormData) {
   redirect(`/attendance?classId=${classId}&date=${date}&saved=1`);
 }
 
+export async function reportAbsence(formData: FormData) {
+  const user = await requireUser();
+  const studentId = String(formData.get("studentId"));
+  const student = await prisma.student.findUniqueOrThrow({ where: { id: studentId } });
+  const allowed =
+    (user.role === "PARENT" && student.parentId === user.id) ||
+    (isStaff(user) && (user.role === "SUPER_ADMIN" || student.centerId === user.centerId));
+  if (!allowed) redirect("/dashboard");
+  const dateFrom = String(formData.get("dateFrom"));
+  const dateTo = String(formData.get("dateTo") ?? "") || dateFrom;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) redirect(`/students/${studentId}`);
+  await prisma.absenceNotice.create({
+    data: {
+      studentId,
+      dateFrom,
+      dateTo: dateTo < dateFrom ? dateFrom : dateTo,
+      reason: String(formData.get("reason")).trim(),
+      submittedById: user.id,
+    },
+  });
+  revalidatePath(`/students/${studentId}`);
+  revalidatePath("/attendance");
+  redirect(`/students/${studentId}`);
+}
+
 // ---------- Fees ----------
 
 export async function createInvoice(formData: FormData) {

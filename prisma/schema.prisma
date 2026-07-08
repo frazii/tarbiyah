@@ -46,6 +46,7 @@ model User {
   progressRecords ProgressRecord[]     @relation("ProgressTeacher")
   behaviorNotes   BehaviorNote[]       @relation("BehaviorAuthor")
   permissionResponses PermissionResponse[]
+  absenceNotices      AbsenceNotice[]      @relation("AbsenceSubmitter")
 }
 
 model Session {
@@ -77,6 +78,7 @@ model Student {
   progress    ProgressRecord[]
   behavior    BehaviorNote[]
   permissions PermissionResponse[]
+  absenceNotices AbsenceNotice[]
 }
 
 model ClassRoom {
@@ -177,6 +179,18 @@ model ProgressRecord {
   teacherId String
   teacher   User     @relation("ProgressTeacher", fields: [teacherId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model AbsenceNotice {
+  id            String   @id @default(cuid())
+  dateFrom      String // YYYY-MM-DD (inclusive)
+  dateTo        String // YYYY-MM-DD (inclusive)
+  reason        String
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  submittedById String
+  submittedBy   User     @relation("AbsenceSubmitter", fields: [submittedById], references: [id])
+  createdAt     DateTime @default(now())
 }
 
 model BehaviorNote {

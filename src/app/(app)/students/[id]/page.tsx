@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser, isStaff } from "@/lib/auth";
-import { createBehavior, createProgress, payInvoice } from "@/lib/actions";
+import { createBehavior, createProgress, payInvoice, reportAbsence } from "@/lib/actions";
+import { AttendanceCalendar } from "@/components/AttendanceCalendar";
 import { formatDate, formatMoney, fullName, todayISO } from "@/lib/format";
 import {
   GRADES, GRADE_LABELS, PROGRESS_TYPES, PROGRESS_TYPE_LABELS, SURAHS,
@@ -10,8 +11,16 @@ import {
   Badge, Card, Field, PageHeader, attendanceTone, behaviorTone, btnPrimary, gradeTone, inputCls,
 } from "@/components/ui";
 
-export default async function StudentPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function StudentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ month?: string }>;
+}) {
   const { id } = await params;
+  const { month: monthParam } = await searchParams;
+  const month = /^\d{4}-\d{2}$/.test(monthParam ?? "") ? monthParam! : todayISO().slice(0, 7);
   const user = await requireUser();
   const student = await prisma.student.findUnique({
     where: { id },
@@ -23,9 +32,29 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
       invoices: { orderBy: { createdAt: "desc" } },
       progress: { orderBy: [{ date: "desc" }, { createdAt: "desc" }], include: { teacher: true } },
       behavior: { orderBy: { createdAt: "desc" }, include: { author: true } },
+      absenceNotices: { orderBy: { dateFrom: "desc" }, take: 10, include: { submittedBy: true } },
     },
   });
   if (!student) notFound();
+
+  const monthRecords = await prisma.attendanceRecord.findMany({
+    where: { studentId: id, date: { startsWith: month } },
+  });
+  const monthNotices = await prisma.absenceNotice.findMany({
+    where: { studentId: id, dateFrom: { lte: `${month}-31` }, dateTo: { gte: `${month}-01` } },
+  });
+  const calendarDays = new Map<string, { status?: string; note?: string | null; reported?: boolean }>();
+  for (const r of monthRecords) calendarDays.set(r.date, { status: r.status, note: r.note });
+  for (const n of monthNotices) {
+    const from = n.dateFrom > `${month}-01` ? n.dateFrom : `${month}-01`;
+    const to = n.dateTo < `${month}-31` ? n.dateTo : `${month}-31`;
+    const start = new Date(from + "T00:00:00");
+    const end = new Date(to + "T00:00:00");
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      calendarDays.set(iso, { ...calendarDays.get(iso), reported: true });
+    }
+  }
 
   const staff = isStaff(user);
   const canView =
@@ -51,6 +80,55 @@ export default async function StudentPage({ params }: { params: Promise<{ id: st
           <p className="mt-0.5 text-ink">{student.medicalNotes}</p>
         </div>
       )}
+
+      {/* Attendance calendar + absence reporting */}
+      <Card className="mb-4">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-display text-lg">
+            Attendance calendar <span className="font-arabic text-base text-gold" dir="rtl">الحضور</span>
+          </h2>
+        </div>
+        <AttendanceCalendar month={month} days={calendarDays} baseHref={`/students/${student.id}`} />
+
+        <form action={reportAbsence} className="mt-5 space-y-3 border-t border-line pt-4">
+          <p className="text-sm font-semibold">
+            {user.role === "PARENT" ? "Report an upcoming absence" : "Record a reported absence"}
+          </p>
+          <p className="text-xs text-ink-soft">
+            {user.role === "PARENT"
+              ? "Let the teachers know ahead of time — the roll will show your child as excused for these dates."
+              : "Log an absence a parent communicated to you (call, in person)."}
+          </p>
+          <input type="hidden" name="studentId" value={student.id} />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field label="From">
+              <input name="dateFrom" type="date" required defaultValue={todayISO()} className={inputCls} />
+            </Field>
+            <Field label="To (optional)">
+              <input name="dateTo" type="date" className={inputCls} />
+            </Field>
+            <Field label="Reason">
+              <input name="reason" required className={inputCls} placeholder="e.g. Family travel, unwell" />
+            </Field>
+          </div>
+          <button className={btnPrimary}>Submit absence notice</button>
+        </form>
+
+        {student.absenceNotices.length > 0 && (
+          <ul className="mt-4 divide-y divide-line border-t border-line">
+            {student.absenceNotices.map((n) => (
+              <li key={n.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="text-sm">
+                  {formatDate(n.dateFrom)}
+                  {n.dateTo !== n.dateFrom && ` – ${formatDate(n.dateTo)}`}
+                  <span className="text-ink-soft"> — {n.reason}</span>
+                </span>
+                <span className="text-xs text-ink-soft">by {n.submittedBy.name}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Attendance */}

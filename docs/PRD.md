@@ -86,6 +86,14 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
 - **FR-14 (P0)** Teachers see only their own classes in the roll picker; admins see all.
 - **FR-15 (P1)** Attendance rate summaries and exportable reports. *(v1 shows per-student history only)*
 - **FR-16 (P1)** Automatic absence notification to the parent. *(v2, needs outbound channel)*
+- **FR-16a (P0)** Parents can report an upcoming absence for their child (single day or
+  range, with reason). Staff can log absences a parent communicated offline.
+- **FR-16b (P0)** When staff load the roll for a date covered by a notice, the student
+  defaults to **Excused**, with the reporter and reason shown inline and the note prefilled.
+- **FR-16c (P0)** Attendance calendar (School Bytes parity): month grid on the student
+  profile coloring each day by status (present / late / excused / absent), marking
+  reported-absence days and today, with prev/next month navigation. Visible to the
+  linked parent and staff.
 
 ### 4.5 Fees
 - **FR-17 (P0)** Admins issue invoices (title, description, amount, due date) per student.
@@ -172,6 +180,7 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
 | Auth, roles, tenant isolation (FR-1–3, 5, 6, 35) | ✅ Shipped & verified E2E |
 | Students, classes, profiles (FR-7–11) | ✅ Shipped |
 | Attendance marking + history (FR-12–14) | ✅ Shipped & verified E2E |
+| Parent absence notices + roll integration + calendar (FR-16a–c) | ✅ Shipped & verified E2E (9 Jul 2026) |
 | Fees: issue, pay (demo), record, overdue (FR-17–19) | ✅ Shipped & verified E2E |
 | Progress + behaviour (FR-21, 22, 24) | ✅ Shipped |
 | Announcements with audiences (FR-25) | ✅ Shipped |

@@ -27,7 +27,13 @@ export default async function AttendancePage({
     ? await prisma.student.findMany({
         where: { classId: selected.id },
         orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-        include: { attendance: { where: { classId: selected.id, date } } },
+        include: {
+          attendance: { where: { classId: selected.id, date } },
+          absenceNotices: {
+            where: { dateFrom: { lte: date }, dateTo: { gte: date } },
+            include: { submittedBy: true },
+          },
+        },
       })
     : [];
 
@@ -81,12 +87,20 @@ export default async function AttendancePage({
             <ul className="divide-y divide-line">
               {students.map((s) => {
                 const existing = s.attendance[0];
-                const current = existing?.status ?? "PRESENT";
+                const notice = s.absenceNotices[0];
+                const current = existing?.status ?? (notice ? "EXCUSED" : "PRESENT");
                 return (
                   <li key={s.id} className="py-3">
                     <input type="hidden" name="studentId" value={s.id} />
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <span className="font-semibold">{fullName(s)}</span>
+                      <span className="font-semibold">
+                        {fullName(s)}
+                        {notice && (
+                          <span className="mt-0.5 block text-xs font-normal text-amber">
+                            Absence reported by {notice.submittedBy.name}: {notice.reason}
+                          </span>
+                        )}
+                      </span>
                       <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={`Status for ${fullName(s)}`}>
                         {ATTENDANCE_STATUSES.map((status) => (
                           <label
@@ -107,7 +121,7 @@ export default async function AttendancePage({
                     </div>
                     <input
                       name={`note_${s.id}`}
-                      defaultValue={existing?.note ?? ""}
+                      defaultValue={existing?.note ?? (notice ? `Reported: ${notice.reason}` : "")}
                       placeholder="Note (optional)"
                       className="mt-2 w-full rounded-lg border border-line px-3 py-1.5 text-xs focus:border-primary focus:outline-none"
                     />
