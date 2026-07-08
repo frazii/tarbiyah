@@ -5,6 +5,7 @@ import { ROLE_LABELS, type Role } from "@/lib/constants";
 import { MobileNav } from "./MobileNav";
 import { SideNav } from "./SideNav";
 import { Star8 } from "./ui";
+import { brandStyle } from "@/lib/branding";
 
 export type NavItem = { href: string; label: string; icon: string; arabic?: string };
 
@@ -61,7 +62,7 @@ export function Shell({ user, children }: { user: CurrentUser; children: React.R
     .toUpperCase();
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col" style={brandStyle(user.center?.brandColor)}>
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-line bg-white">
         <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
@@ -72,7 +73,15 @@ export function Shell({ user, children }: { user: CurrentUser; children: React.R
             <Brand />
           </div>
           <div className="hidden items-center gap-2 text-sm text-ink-soft sm:flex">
-            {user.center ? user.center.name : "All centers"}
+            {user.center?.logoData && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.center.logoData}
+                alt={`${user.center.name} logo`}
+                className="h-8 w-8 rounded-lg border border-line bg-white object-contain"
+              />
+            )}
+            <span className="font-semibold text-ink">{user.center ? user.center.name : "All centers"}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">

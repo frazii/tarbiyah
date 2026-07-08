@@ -69,6 +69,11 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
   coordinates and prayer-calculation method.
 - **FR-6 (P0)** Center coordinates + method drive that center's Adhan timings everywhere
   they are shown.
+- **FR-6a (P0)** Per-center branding (shipped 9 Jul 2026): center admins upload a logo
+  (PNG/JPEG/SVG/WebP ≤512 KB) and pick a primary color. Both are reflected across the
+  app shell for everyone at that center (staff and parents) and on the center's own
+  sign-in page (`/login?center=<slug>`), which shows the logo, center name and brand
+  color. Derived shades (hover, soft tints) are computed from the single brand color.
 
 ### 4.3 Students & classes
 - **FR-7 (P0)** Admins create/edit students: name, gender, DOB, medical notes, linked

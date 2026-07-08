@@ -1,13 +1,18 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { centerScope } from "@/lib/scope";
-import { createCenter, createUser } from "@/lib/actions";
+import { createCenter, createUser, updateCenterBranding } from "@/lib/actions";
 import { CALC_METHODS, ROLE_LABELS, type Role } from "@/lib/constants";
 import { Badge, Card, Field, PageHeader, btnPrimary, inputCls } from "@/components/ui";
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ branding?: string }>;
+}) {
   const user = await requireRole("SUPER_ADMIN", "ADMIN");
   const isSuper = user.role === "SUPER_ADMIN";
+  const { branding } = await searchParams;
 
   const [users, centers] = await Promise.all([
     prisma.user.findMany({
@@ -80,6 +85,66 @@ export default async function AdminPage() {
           </Card>
         </>
       )}
+
+      <h2 className="mb-3 font-display text-xl">Branding</h2>
+      {branding === "saved" && (
+        <p className="mb-3 rounded-lg bg-primary-soft px-4 py-3 text-sm font-semibold text-primary-dark">
+          Branding saved. Your center&rsquo;s logo and color now appear across the app and on your
+          sign-in page.
+        </p>
+      )}
+      {branding === "invalid" && (
+        <p className="mb-3 rounded-lg bg-danger-soft px-4 py-3 text-sm text-danger">
+          That logo can&rsquo;t be used. Upload a PNG, JPEG, SVG or WebP up to 512 KB.
+        </p>
+      )}
+      <Card className="mb-8">
+        <p className="mb-4 text-sm text-ink-soft">
+          Upload your center&rsquo;s logo and pick a primary color. Everyone at your center —
+          admins, teachers and parents — sees them across the app, and on your center&rsquo;s own
+          sign-in page.
+        </p>
+        <form action={updateCenterBranding} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" encType="multipart/form-data">
+          {isSuper && (
+            <Field label="Center">
+              <select name="centerId" required className={inputCls}>
+                {centers.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </Field>
+          )}
+          <Field label="Logo (PNG, JPEG, SVG or WebP, max 512 KB)">
+            <input type="file" name="logo" accept="image/png,image/jpeg,image/svg+xml,image/webp" className={`${inputCls} file:mr-3 file:rounded-md file:border-0 file:bg-primary-soft file:px-3 file:py-1 file:text-xs file:font-semibold file:text-primary-dark`} />
+          </Field>
+          <Field label="Primary color">
+            <input
+              type="color"
+              name="brandColor"
+              defaultValue={user.center?.brandColor ?? "#046a38"}
+              className="h-10 w-full cursor-pointer rounded-lg border border-line-strong bg-white p-1"
+            />
+          </Field>
+          <div className="flex flex-col justify-end gap-2">
+            <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
+              <input type="checkbox" name="clearLogo" className="h-3.5 w-3.5" /> Remove current logo
+            </label>
+            <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
+              <input type="checkbox" name="clearColor" className="h-3.5 w-3.5" /> Reset color to default
+            </label>
+            <button className={btnPrimary}>Save branding</button>
+          </div>
+        </form>
+        {!isSuper && user.center && (
+          <p className="mt-4 border-t border-line pt-3 text-xs text-ink-soft">
+            Your center&rsquo;s sign-in link:{" "}
+            <code className="rounded bg-mist px-1.5 py-0.5 font-semibold text-primary-dark">
+              /login?center={user.center.slug}
+            </code>{" "}
+            — share it with parents and staff so they see your logo and colors when signing in.
+          </p>
+        )}
+      </Card>
 
       <h2 className="mb-3 font-display text-xl">Accounts</h2>
       <Card className="mb-4">

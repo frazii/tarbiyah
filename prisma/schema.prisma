@@ -19,6 +19,8 @@ model Center {
   latitude      Float
   longitude     Float
   calcMethod    Int      @default(2) // AlAdhan calculation method id
+  logoData      String? // data: URI of the uploaded logo (small images only)
+  brandColor    String? // hex primary color override, e.g. #0e5c4a
   createdAt     DateTime @default(now())
 
   users         User[]

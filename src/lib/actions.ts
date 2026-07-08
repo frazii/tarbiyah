@@ -11,9 +11,10 @@ import { createSession, destroySession, requireUser, requireRole, isAdmin, isSta
 export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const centerSlug = String(formData.get("center") ?? "");
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    redirect("/login?error=1");
+    redirect(`/login?error=1${centerSlug ? `&center=${encodeURIComponent(centerSlug)}` : ""}`);
   }
   await createSession(user.id);
   redirect("/dashboard");
@@ -280,6 +281,35 @@ export async function createUser(formData: FormData) {
   });
   revalidatePath("/admin");
   redirect("/admin");
+}
+
+export async function updateCenterBranding(formData: FormData) {
+  const user = await requireRole("SUPER_ADMIN", "ADMIN");
+  const centerId = user.role === "SUPER_ADMIN" ? String(formData.get("centerId")) : user.centerId!;
+  if (!centerId) redirect("/admin");
+
+  const data: { brandColor?: string | null; logoData?: string | null } = {};
+
+  const color = String(formData.get("brandColor") ?? "").trim();
+  if (formData.get("clearColor") === "on") data.brandColor = null;
+  else if (/^#[0-9a-fA-F]{6}$/.test(color)) data.brandColor = color.toLowerCase();
+
+  const logo = formData.get("logo");
+  if (formData.get("clearLogo") === "on") {
+    data.logoData = null;
+  } else if (logo instanceof File && logo.size > 0) {
+    const okTypes = ["image/png", "image/jpeg", "image/svg+xml", "image/webp"];
+    if (okTypes.includes(logo.type) && logo.size <= 512 * 1024) {
+      const buf = Buffer.from(await logo.arrayBuffer());
+      data.logoData = `data:${logo.type};base64,${buf.toString("base64")}`;
+    } else {
+      redirect("/admin?branding=invalid");
+    }
+  }
+
+  await prisma.center.update({ where: { id: centerId }, data });
+  revalidatePath("/", "layout");
+  redirect("/admin?branding=saved");
 }
 
 export async function createCenter(formData: FormData) {
