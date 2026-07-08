@@ -49,11 +49,11 @@ export function AttendanceCalendar({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <Link href={`${baseHref}?month=${prev}`} className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-primary hover:bg-mist" aria-label="Previous month">
+        <Link href={`${baseHref}?month=${prev}`} className="rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-primary-dark hover:bg-primary-soft" aria-label="Previous month">
           ← {prev}
         </Link>
         <p className="font-display text-lg">{monthName}</p>
-        <Link href={`${baseHref}?month=${next}`} className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-primary hover:bg-mist" aria-label="Next month">
+        <Link href={`${baseHref}?month=${next}`} className="rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-primary-dark hover:bg-primary-soft" aria-label="Next month">
           {next} →
         </Link>
       </div>

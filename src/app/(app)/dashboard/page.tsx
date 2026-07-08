@@ -142,7 +142,7 @@ export default async function DashboardPage() {
                                       className={
                                         v === "yes"
                                           ? "rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-dark"
-                                          : "rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-mist"
+                                          : "rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-ink hover:bg-danger-soft"
                                       }
                                     >
                                       {v === "yes" ? "Give permission" : "Decline"}
@@ -249,7 +249,7 @@ export default async function DashboardPage() {
                 </div>
                 <Link
                   href={`/attendance?classId=${c.id}`}
-                  className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-primary hover:bg-mist"
+                  className="rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-primary-dark hover:bg-primary-soft"
                 >
                   Mark roll
                 </Link>

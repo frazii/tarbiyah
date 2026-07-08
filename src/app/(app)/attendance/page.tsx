@@ -105,7 +105,7 @@ export default async function AttendancePage({
                         {ATTENDANCE_STATUSES.map((status) => (
                           <label
                             key={status}
-                            className="cursor-pointer rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors has-checked:border-primary has-checked:bg-primary has-checked:text-white"
+                            className="cursor-pointer rounded-full border border-line-strong bg-mist px-3.5 py-2 text-xs font-semibold text-ink transition-colors hover:bg-primary-soft has-checked:border-primary has-checked:bg-primary has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-primary/60 has-focus-visible:ring-offset-1"
                           >
                             <input
                               type="radio"

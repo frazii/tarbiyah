@@ -7,15 +7,16 @@
   --color-secondary: #1b5fa8;
   --color-secondary-dark: #12477f;
   --color-secondary-soft: #e6eef8;
-  --color-gold: #c8a24b;
+  --color-gold: #8a681e; /* brass, AA on white (5.15) and mist (4.79) */
   --color-gold-soft: #f7f0df;
   --color-ink: #16261d;
   --color-ink-soft: #5b6f63;
   --color-mist: #f3f8f4;
   --color-line: #dde8df;
+  --color-line-strong: #7c9184; /* 3.37:1 on white — input/chip borders */
   --color-danger: #b3382c;
   --color-danger-soft: #fbeae8;
-  --color-amber: #9a6b15;
+  --color-amber: #8a5f12; /* AA on amber-soft (5.02) */
   --color-amber-soft: #faf1dd;
 
 }

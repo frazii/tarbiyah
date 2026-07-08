@@ -65,7 +65,7 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
                             className={
                               v === "yes"
                                 ? "rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-dark"
-                                : "rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-mist"
+                                : "rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-ink hover:bg-danger-soft"
                             }
                           >
                             {v === "yes" ? "Give permission" : "Decline"}

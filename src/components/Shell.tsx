@@ -83,7 +83,7 @@ export function Shell({ user, children }: { user: CurrentUser; children: React.R
               {initials}
             </span>
             <form action={logout}>
-              <button className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-mist hover:text-ink">
+              <button className="rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-ink hover:bg-danger-soft hover:text-ink">
                 Sign out
               </button>
             </form>

@@ -114,7 +114,7 @@ export default async function FeesPage() {
                           <form action={payInvoice}>
                             <input type="hidden" name="id" value={inv.id} />
                             <input type="hidden" name="method" value="Recorded by admin" />
-                            <button className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-primary hover:bg-mist">
+                            <button className="rounded-lg border border-line-strong bg-mist px-3 py-1.5 text-xs font-semibold text-primary-dark hover:bg-primary-soft">
                               Mark paid
                             </button>
                           </form>

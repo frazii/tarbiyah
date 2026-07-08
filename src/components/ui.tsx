@@ -1,13 +1,13 @@
 import Link from "next/link";
 
 export const inputCls =
-  "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary";
+  "w-full rounded-lg border border-line-strong bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-soft/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary";
 
 export const btnPrimary =
   "inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 transition-colors";
 
 export const btnGhost =
-  "inline-flex items-center justify-center gap-2 rounded-lg border border-line px-4 py-2 text-sm font-semibold text-primary hover:bg-mist focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors";
+  "inline-flex items-center justify-center gap-2 rounded-lg border border-line-strong bg-mist px-4 py-2 text-sm font-semibold text-primary-dark hover:bg-primary-soft focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors";
 
 export function Star8({ className = "h-4 w-4" }: { className?: string }) {
   return (
