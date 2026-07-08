@@ -3,31 +3,32 @@ import { logout } from "@/lib/actions";
 import type { CurrentUser } from "@/lib/auth";
 import { ROLE_LABELS, type Role } from "@/lib/constants";
 import { MobileNav } from "./MobileNav";
+import { SideNav } from "./SideNav";
 import { Star8 } from "./ui";
 
-export type NavItem = { href: string; label: string; arabic?: string };
+export type NavItem = { href: string; label: string; icon: string; arabic?: string };
 
 export function navForRole(role: string): NavItem[] {
-  const base: NavItem[] = [{ href: "/dashboard", label: "Dashboard" }];
+  const base: NavItem[] = [{ href: "/dashboard", label: "Dashboard", icon: "home" }];
   const staff: NavItem[] = [
-    { href: "/students", label: "Students" },
-    { href: "/classes", label: "Classes" },
-    { href: "/attendance", label: "Attendance" },
-    { href: "/fees", label: "Fees" },
-    { href: "/announcements", label: "Announcements" },
-    { href: "/events", label: "Events" },
-    { href: "/progress", label: "Progress" },
+    { href: "/students", label: "Students", icon: "students" },
+    { href: "/classes", label: "Classes", icon: "classes" },
+    { href: "/attendance", label: "Attendance", icon: "attendance" },
+    { href: "/fees", label: "Fees", icon: "fees" },
+    { href: "/announcements", label: "Announcements", icon: "announcements" },
+    { href: "/events", label: "Events", icon: "events" },
+    { href: "/progress", label: "Progress", icon: "progress" },
   ];
   const parent: NavItem[] = [
-    { href: "/announcements", label: "Announcements" },
-    { href: "/events", label: "Events" },
-    { href: "/fees", label: "Fees" },
+    { href: "/announcements", label: "Announcements", icon: "announcements" },
+    { href: "/events", label: "Events", icon: "events" },
+    { href: "/fees", label: "Fees", icon: "fees" },
   ];
   const utilities: NavItem[] = [
-    { href: "/prayer-times", label: "Prayer Times", arabic: "الأذان" },
-    { href: "/qibla", label: "Qibla Locator", arabic: "القبلة" },
+    { href: "/prayer-times", label: "Prayer Times", icon: "prayer", arabic: "الأذان" },
+    { href: "/qibla", label: "Qibla Locator", icon: "qibla", arabic: "القبلة" },
   ];
-  const admin: NavItem[] = [{ href: "/admin", label: "Administration" }];
+  const admin: NavItem[] = [{ href: "/admin", label: "Administration", icon: "admin" }];
 
   if (role === "PARENT") return [...base, ...parent, ...utilities];
   if (role === "TEACHER") return [...base, ...staff, ...utilities];
@@ -52,58 +53,60 @@ export function Brand() {
 
 export function Shell({ user, children }: { user: CurrentUser; children: React.ReactNode }) {
   const nav = navForRole(user.role);
-  return (
-    <div className="flex min-h-screen w-full">
-      {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-mist/50 lg:flex">
-        <div className="px-5 py-5">
-          <Brand />
-        </div>
-        <nav className="flex-1 space-y-0.5 px-3">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold text-ink-soft hover:bg-primary-soft hover:text-primary-dark"
-            >
-              {item.label}
-              {item.arabic && (
-                <span className="font-arabic text-xs text-gold" dir="rtl">
-                  {item.arabic}
-                </span>
-              )}
-            </Link>
-          ))}
-        </nav>
-        <div className="border-t border-line px-5 py-4 text-sm">
-          <p className="font-semibold text-ink">{user.name}</p>
-          <p className="text-xs text-ink-soft">
-            {ROLE_LABELS[user.role as Role]}
-            {user.center ? ` · ${user.center.name}` : ""}
-          </p>
-          <form action={logout} className="mt-2">
-            <button className="text-xs font-semibold text-primary hover:underline">Sign out</button>
-          </form>
-        </div>
-      </aside>
+  const initials = user.name
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile header */}
-        <header className="flex items-center justify-between border-b border-line px-4 py-3 lg:hidden">
-          <Brand />
-          <MobileNav
-            nav={nav}
-            userLine={`${user.name} — ${ROLE_LABELS[user.role as Role]}`}
-          />
-        </header>
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
-        <footer className="border-t border-line px-4 py-4 text-center text-xs text-ink-soft">
-          <span className="font-arabic text-sm text-gold" dir="rtl">
-            رَبِّ زِدْنِي عِلْمًا
-          </span>
-          <span className="mx-2">·</span>
-          &ldquo;My Lord, increase me in knowledge&rdquo; — Ta-Ha 114
-        </footer>
+  return (
+    <div className="flex min-h-screen w-full flex-col">
+      {/* Top bar */}
+      <header className="sticky top-0 z-40 border-b border-line bg-white">
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="lg:hidden">
+              <MobileNav nav={nav} userLine={`${user.name} — ${ROLE_LABELS[user.role as Role]}`} />
+            </div>
+            <Brand />
+          </div>
+          <div className="hidden items-center gap-2 text-sm text-ink-soft sm:flex">
+            {user.center ? user.center.name : "All centers"}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="hidden text-right sm:block">
+              <p className="text-sm font-semibold leading-tight text-ink">{user.name}</p>
+              <p className="text-xs leading-tight text-ink-soft">{ROLE_LABELS[user.role as Role]}</p>
+            </div>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary-soft text-sm font-bold text-secondary">
+              {initials}
+            </span>
+            <form action={logout}>
+              <button className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-mist hover:text-ink">
+                Sign out
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex min-h-0 flex-1">
+        {/* Desktop sidebar */}
+        <aside className="hidden w-60 shrink-0 border-r border-line bg-white lg:block">
+          <SideNav nav={nav} />
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col bg-mist/40">
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+          <footer className="border-t border-line px-4 py-4 text-center text-xs text-ink-soft">
+            <span className="font-arabic text-sm text-gold" dir="rtl">
+              رَبِّ زِدْنِي عِلْمًا
+            </span>
+            <span className="mx-2">·</span>
+            &ldquo;My Lord, increase me in knowledge&rdquo; — Ta-Ha 114
+          </footer>
+        </div>
       </div>
     </div>
   );

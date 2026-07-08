@@ -155,9 +155,14 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
 ## 5. Non-functional requirements
 
 - **NFR-1 Responsive**: every screen usable at 390 px; drawer nav on mobile, sidebar ≥ lg.
-- **NFR-2 Theme**: white background; emerald `#046A38` primary; brass `#C8A24B` reserved
-  for calligraphic accents; Marcellus display / Karla body / Amiri Arabic; mihrab-arch
-  signature shapes and eight-point-star pattern. No dark mode in v1.
+- **NFR-2 Theme** (updated 9 Jul 2026 — School Bytes-style UI): white surfaces on a soft
+  sage canvas; **green + blue** palette — emerald `#046A38` primary, blue `#1B5FA8`
+  secondary (alternating on tiles, stats and icons), brass `#C8A24B` reserved for
+  calligraphic accents; green→blue gradient band with eight-point-star lattice.
+  Layout mirrors School Bytes: white top bar (brand, center name, user avatar, sign out),
+  icon sidebar with active states, module tile grid on dashboards, card/table content.
+  Marcellus display / Karla body / Amiri Arabic; mihrab-arch prayer niches retained.
+  No dark mode in v1.
 - **NFR-3 Accessibility**: semantic forms with labels, keyboard-visible focus, reduced-
   motion respected, radio groups labelled per student.
 - **NFR-4 Security**: server-side authorization on every action; HttpOnly SameSite=Lax

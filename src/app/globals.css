@@ -4,6 +4,9 @@
   --color-primary: #046a38;
   --color-primary-dark: #03502b;
   --color-primary-soft: #e3efe7;
+  --color-secondary: #1b5fa8;
+  --color-secondary-dark: #12477f;
+  --color-secondary-soft: #e6eef8;
   --color-gold: #c8a24b;
   --color-gold-soft: #f7f0df;
   --color-ink: #16261d;
@@ -39,6 +42,10 @@ body {
 
 /* Eight-point star lattice band */
 .pattern-band {
+  background-color: var(--color-primary);
+  background-image: url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.16' stroke-width='1'%3E%3Cpath d='M24 4l4.7 10.6L40 10l-4.6 11.3L46 24l-10.6 2.7L40 38l-11.3-4.6L24 44l-2.7-10.6L10 38l4.6-11.3L4 24l10.6-4.7L10 10l11.3 4.6z'/%3E%3C/g%3E%3C/svg%3E"), linear-gradient(135deg, #046a38 0%, #0d5f68 55%, #1b5fa8 100%);
+}
+.pattern-band-plain {
   background-color: var(--color-primary);
   background-image: url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.16' stroke-width='1'%3E%3Cpath d='M24 4l4.7 10.6L40 10l-4.6 11.3L46 24l-10.6 2.7L40 38l-11.3-4.6L24 44l-2.7-10.6L10 38l4.6-11.3L4 24l10.6-4.7L10 10l11.3 4.6z'/%3E%3C/g%3E%3C/svg%3E");
 }

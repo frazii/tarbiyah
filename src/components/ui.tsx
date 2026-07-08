@@ -96,11 +96,28 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   );
 }
 
-export function StatCard({ label, value, href }: { label: string; value: string | number; href?: string }) {
+export function StatCard({
+  label,
+  value,
+  href,
+  tone = "green",
+}: {
+  label: string;
+  value: string | number;
+  href?: string;
+  tone?: "green" | "blue";
+}) {
   const inner = (
-    <div className="arch-card border border-line bg-white px-5 pb-4 pt-6 text-center transition-shadow hover:shadow-sm">
-      <div className="font-display text-3xl text-primary">{value}</div>
-      <div className="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</div>
+    <div className="flex items-center gap-3 rounded-xl border border-line bg-white px-4 py-3.5 transition-shadow hover:shadow-sm">
+      <span
+        className={`h-10 w-1.5 shrink-0 rounded-full ${tone === "blue" ? "bg-secondary" : "bg-primary"}`}
+      />
+      <div className="min-w-0">
+        <div className={`truncate font-display text-2xl ${tone === "blue" ? "text-secondary" : "text-primary"}`}>
+          {value}
+        </div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</div>
+      </div>
     </div>
   );
   return href ? <Link href={href}>{inner}</Link> : inner;

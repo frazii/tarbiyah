@@ -75,9 +75,9 @@ export default async function Home() {
           Modelled on the tools modern schools rely on, rebuilt around the rhythm of the deen.
         </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {MODULES.map((m) => (
+          {MODULES.map((m, i) => (
             <div key={m.title} className="arch-card border border-line bg-white px-6 pb-5 pt-7">
-              <Star8 className="h-4 w-4 text-gold" />
+              <Star8 className={`h-4 w-4 ${i % 2 === 1 ? "text-secondary" : "text-primary"}`} />
               <h3 className="mt-3 font-display text-lg text-ink">{m.title}</h3>
               <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{m.desc}</p>
             </div>

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { requireUser, isStaff } from "@/lib/auth";
 import { centerScope } from "@/lib/scope";
 import { PrayerTimes } from "@/components/PrayerTimes";
+import { ModuleTiles } from "@/components/ModuleTiles";
+import { navForRole } from "@/components/Shell";
 import { payInvoice, respondPermission } from "@/lib/actions";
 import { formatDate, formatDateTime, formatMoney, fullName } from "@/lib/format";
 import { Badge, Card, PageHeader, StatCard, attendanceTone, btnPrimary } from "@/components/ui";
@@ -45,6 +47,9 @@ export default async function DashboardPage() {
     return (
       <div>
         {greeting}
+        <div className="mb-6">
+          <ModuleTiles nav={navForRole(user.role)} />
+        </div>
         <Card className="mb-6">
           <h2 className="mb-3 font-display text-lg">Today&rsquo;s Adhan timings</h2>
           <PrayerTimes
@@ -203,9 +208,14 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Students" value={studentCount} href="/students" />
-        <StatCard label="Classes" value={classCount} href="/classes" />
+        <StatCard label="Classes" value={classCount} href="/classes" tone="blue" />
         <StatCard label="Unpaid invoices" value={pendingInvoices.length} href="/fees" />
-        <StatCard label="Outstanding" value={formatMoney(outstanding)} href="/fees" />
+        <StatCard label="Outstanding" value={formatMoney(outstanding)} href="/fees" tone="blue" />
+      </div>
+
+      <div className="mt-6">
+        <h2 className="mb-3 font-display text-xl">Modules</h2>
+        <ModuleTiles nav={navForRole(user.role)} />
       </div>
 
       <Card className="mt-6">
