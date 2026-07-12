@@ -10,6 +10,22 @@ Tarbiyah is a multi-center management platform for Islamic teaching centers (mad
 
 The canvas above walks every role's real journey through the shipped screens: visitor → branded sign-in → parent dashboard → child profile, the teacher's roll and the admin's tools, and the super-admin Platform Portal with the mobile view beside it.
 
+### User flows
+
+Each journey below is drawn as artboards on the canvas; the routes are the real Next.js paths and the parenthesised names are the real server actions.
+
+<Table
+  id="flows-table"
+  columns={["Flow", "Journey"]}
+  rows={[
+    ["Visitor → member", "Landing / → branded sign-in /login?center=al-noor → role-aware /dashboard. Accounts are admin-invited; parents arrive via the center's shared link."],
+    ["Parent", "/dashboard children cards → /students/[id] attendance calendar → report absence (reportAbsence) → /fees Pay now (payInvoice) → /events/[id] permission yes/no → /prayer-times & /qibla"],
+    ["Teacher", "/dashboard → /attendance pick class + date (parent notices pre-fill Excused) → save roll (saveAttendance) → /students/[id] record progress (createProgress) & akhlaq (createBehavior) → /announcements & /events"],
+    ["Center Admin", "/students/new & /classes/new enrolment → /fees issue invoices (createInvoice) → /admin accounts (createUser) → branding upload + color (updateCenterBranding) → share /login?center=<slug>"],
+    ["Super Admin", "/portal stats & 8-week trend → onboard center + first admin (onboardCenter) → per-center 30-day report → CSV at /portal/report → /admin all centers & accounts"],
+  ]}
+/>
+
 ### Architecture
 
 The whole app is server-rendered: pages are server components, every write is a server action posted by a plain form, and client JavaScript is reserved for the three things that genuinely need the device — prayer times, the qibla compass, and the mobile nav drawer.
