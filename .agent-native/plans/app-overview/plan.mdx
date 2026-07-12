@@ -4,54 +4,225 @@ kind: plan
 localOnly: true
 ---
 
-## What Tarbiyah is
+### Overview
 
-A multi-center management platform for Islamic teaching centers (madrasah/maktab),
-modelled on School Bytes: enrolment, classes, attendance, fees, hifz/tilawah
-progress, behaviour (akhlaq), announcements, events with digital permission slips,
-plus two Islamic utilities — Adhan timings (AlAdhan API, per-center coordinates and
-calculation method) and a Qibla locator (device compass + great-circle bearing).
-Four roles: Super Admin (platform), Center Admin, Teacher, Parent. Every query is
-tenant-scoped through `centerScope(user)`; super admins see all centers.
+Tarbiyah is a multi-center management platform for Islamic teaching centers (madrasah / maktab), modelled on School Bytes: enrolment, classes, attendance, fees, hifz and tilawah progress, behaviour (akhlaq), announcements, and events with digital permission slips — plus two Islamic utilities, Adhan timings (AlAdhan API, per-center coordinates and calculation method) and a Qibla locator (device compass + great-circle bearing to the Kaaba). Four roles use one codebase: **Super Admin** (platform), **Center Admin**, **Teacher**, and **Parent**.
 
-## Architecture
+The canvas above walks every role's real journey through the shipped screens: visitor → branded sign-in → parent dashboard → child profile, the teacher's roll and the admin's tools, and the super-admin Platform Portal with the mobile view beside it.
 
-Next.js 16 App Router + TypeScript. Server components render pages; all writes are
-server actions in `src/lib/actions.ts` (plain `<form action>`). Prisma 6 + SQLite
-(`prisma/dev.db`). Cookie sessions (`tarbiyah_session`, bcrypt hashes, DB Session
-table) via `src/lib/auth.ts` (`requireUser` / `requireRole`). Per-center theming:
-logo (base64 in DB) + brand color remapped through CSS custom properties in
-`src/lib/branding.ts`, with a WCAG 4.5:1 guard on save. UI kit in
-`src/components/ui.tsx`; shell + role-aware nav in `src/components/Shell.tsx`.
+### Architecture
 
-## User flows (see canvas)
+The whole app is server-rendered: pages are server components, every write is a server action posted by a plain form, and client JavaScript is reserved for the three things that genuinely need the device — prayer times, the qibla compass, and the mobile nav drawer.
 
-1. **Visitor → member**: Landing `/` (hero, prayer strip, modules) → `/login`
-   (or branded `/login?center=<slug>`) → role-aware `/dashboard`.
-2. **Parent**: dashboard (children cards, prayer strip) → child profile
-   `/students/[id]` (attendance calendar, report absence) → `/fees` Pay now →
-   `/events/[id]` permission yes/no → `/announcements`, `/prayer-times`, `/qibla`.
-3. **Teacher**: dashboard → `/attendance` (pick class + date; parent absence
-   notices pre-fill EXCUSED) → save roll → `/students/[id]` record progress
-   (surah/ayah/grade) & behaviour → `/announcements` / `/events` create.
-4. **Center Admin**: everything teachers do plus `/students/new`, `/classes/new`,
-   `/fees` invoices, `/admin` (accounts, branding upload + color, share sign-in
-   link).
-5. **Super Admin**: `/portal` (platform stats, 8-week attendance trend, one-step
-   center + admin onboarding, per-center 30-day report, CSV export at
-   `/portal/report`) → `/admin` (centers, all accounts, branding for any center).
+<Diagram id="arch-diagram" caption="System shape: server components render, server actions write, everything is tenant-scoped.">
 
-## Data model (Prisma)
+```html
+<div class="diagram-panel" data-rough>
+  <div class="arch-col">
+    <div class="diagram-box">
+      <div class="diagram-pill">Browser</div>
+      <div class="diagram-node">Server-rendered pages</div>
+      <div class="diagram-node">Plain form posts</div>
+      <div class="diagram-node">Client islands: prayer, qibla, nav</div>
+    </div>
+    <div class="diagram-muted">works without heavy JS</div>
+  </div>
+  <div class="arch-col">
+    <div class="diagram-box">
+      <div class="diagram-pill">Next.js 16 App Router</div>
+      <div class="diagram-node">Server actions (src/lib/actions.ts)</div>
+      <div class="diagram-node">Cookie sessions + bcrypt (auth.ts)</div>
+      <div class="diagram-node">centerScope(user) on every query</div>
+      <div class="diagram-node">brandStyle() CSS-variable theming</div>
+    </div>
+    <div class="diagram-muted">auth, tenancy, branding</div>
+  </div>
+  <div class="arch-col">
+    <div class="diagram-box">
+      <div class="diagram-pill">Prisma 6 → SQLite</div>
+      <div class="diagram-node">12 models, prisma/dev.db</div>
+      <div class="diagram-node">Logos as base64 data URIs</div>
+      <div class="diagram-node">Seeded demo world (2 centers)</div>
+    </div>
+    <div class="diagram-muted">single-file dev database</div>
+  </div>
+</div>
+```
 
-Center → User (role), Student (parent, class), ClassRoom (teacher),
-AttendanceRecord (unique per student/class/date), AbsenceNotice, Invoice
-(PENDING|PAID), Announcement, Event → PermissionResponse (unique per
-event/student), ProgressRecord (HIFZ|TILAWAH|ISLAMIC_STUDIES|ARABIC),
-BehaviorNote, Session.
+```css
+.diagram-panel { display: flex; gap: 16px; align-items: stretch; }
+.arch-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.arch-col .diagram-box { display: flex; flex-direction: column; gap: 8px; padding: 12px; flex: 1; }
+.arch-col .diagram-muted { text-align: center; }
+```
 
-## Shipped vs roadmap
+</Diagram>
 
-Shipped: all flows above, per-center branding, brand contrast guard, platform
-portal, prayer widget with time-of-day skies, WCAG AA token audit.
-Roadmap (PRD §9–10): Stripe payments + per-center currency, email notifications,
-attendance reports for admins, forms module, events calendar month view.
+One external service: the AlAdhan API is fetched client-side (no key) using each center's latitude, longitude and calculation method, and also supplies the Hijri date shown across the app.
+
+<Callout id="invariants" tone="decision">
+
+Three invariants hold everywhere: **tenant isolation** is enforced in queries via `centerScope(user)`, not just hidden in the UI (super admins are the only cross-center role); **attendance is one record per student per class per date** (unique index, saves are upserts); and **brand colors below 4.5:1 contrast on white are rejected at save**, so a center can never theme itself unreadable.
+
+</Callout>
+
+### Data model
+
+Nothing in the schema knows about a specific center — every content table hangs off `Center`, and parents link to students rather than owning them, so shared custody and multiple children both work.
+
+<DataModel
+  id="core-erd"
+  entities={[
+    {
+      id: "center",
+      name: "Center",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "slug", type: "text unique" },
+        { name: "latitude/longitude", type: "float" },
+        { name: "calcMethod", type: "int" },
+        { name: "logoData", type: "text?" },
+        { name: "brandColor", type: "text?" },
+      ],
+    },
+    {
+      id: "user",
+      name: "User",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "email", type: "text unique" },
+        { name: "role", type: "SUPER_ADMIN|ADMIN|TEACHER|PARENT" },
+        { name: "centerId", type: "cuid?", fk: "Center.id" },
+      ],
+    },
+    {
+      id: "student",
+      name: "Student",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "centerId", type: "cuid", fk: "Center.id" },
+        { name: "parentId", type: "cuid?", fk: "User.id" },
+        { name: "classId", type: "cuid?", fk: "ClassRoom.id" },
+      ],
+    },
+    {
+      id: "classroom",
+      name: "ClassRoom",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "centerId", type: "cuid", fk: "Center.id" },
+        { name: "teacherId", type: "cuid?", fk: "User.id" },
+      ],
+    },
+    {
+      id: "attendance",
+      name: "AttendanceRecord",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "studentId", type: "cuid", fk: "Student.id" },
+        { name: "classId", type: "cuid", fk: "ClassRoom.id" },
+        { name: "date", type: "YYYY-MM-DD" },
+        { name: "status", type: "PRESENT|ABSENT|LATE|EXCUSED" },
+      ],
+    },
+    {
+      id: "absence",
+      name: "AbsenceNotice",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "studentId", type: "cuid", fk: "Student.id" },
+        { name: "dateFrom/dateTo", type: "YYYY-MM-DD" },
+        { name: "submittedById", type: "cuid", fk: "User.id" },
+      ],
+    },
+    {
+      id: "invoice",
+      name: "Invoice",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "studentId", type: "cuid", fk: "Student.id" },
+        { name: "amountCents", type: "int" },
+        { name: "status", type: "PENDING|PAID" },
+      ],
+    },
+    {
+      id: "event",
+      name: "Event",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "centerId", type: "cuid", fk: "Center.id" },
+        { name: "requiresPermission", type: "boolean" },
+      ],
+    },
+    {
+      id: "permission",
+      name: "PermissionResponse",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "eventId", type: "cuid", fk: "Event.id" },
+        { name: "studentId", type: "cuid", fk: "Student.id" },
+        { name: "granted", type: "boolean" },
+      ],
+    },
+    {
+      id: "progress",
+      name: "ProgressRecord",
+      fields: [
+        { name: "id", type: "cuid", pk: true },
+        { name: "studentId", type: "cuid", fk: "Student.id" },
+        { name: "type", type: "HIFZ|TILAWAH|STUDIES|ARABIC" },
+        { name: "surah + ayahFrom/To", type: "text/int" },
+        { name: "grade", type: "Mumtaz→Maqbul" },
+      ],
+    },
+  ]}
+  relations={[
+    { from: "user", to: "center", kind: "n-1" },
+    { from: "student", to: "center", kind: "n-1" },
+    { from: "student", to: "user", kind: "n-1" },
+    { from: "student", to: "classroom", kind: "n-1" },
+    { from: "classroom", to: "center", kind: "n-1" },
+    { from: "attendance", to: "student", kind: "n-1" },
+    { from: "attendance", to: "classroom", kind: "n-1" },
+    { from: "absence", to: "student", kind: "n-1" },
+    { from: "invoice", to: "student", kind: "n-1" },
+    { from: "event", to: "center", kind: "n-1" },
+    { from: "permission", to: "event", kind: "n-1" },
+    { from: "permission", to: "student", kind: "n-1" },
+    { from: "progress", to: "student", kind: "n-1" },
+  ]}
+/>
+
+`BehaviorNote` (akhlaq), `Announcement` (audience-targeted), and `Session` (DB-backed login cookies) complete the twelve models.
+
+### What each role can do
+
+<Table
+  id="roles-table"
+  columns={["Role", "Scope", "Key actions"]}
+  rows={[
+    ["Parent", "Own children only", "See attendance calendar & progress, report absences ahead, pay invoices, answer permission slips"],
+    ["Teacher", "Own center", "Mark the roll (absence notices pre-fill Excused), record hifz/tilawah progress and akhlaq notes, post announcements and events"],
+    ["Center Admin", "Own center", "Enrol students, build classes, issue invoices, invite accounts, upload logo + brand color, share the branded sign-in link"],
+    ["Super Admin", "All centers", "Platform Portal: stats, 8-week attendance trend, one-step center + admin onboarding, per-center 30-day report, CSV export"],
+  ]}
+/>
+
+### Shipped vs roadmap
+
+<Table
+  id="status-table"
+  columns={["Area", "Status", "Notes"]}
+  rows={[
+    ["All five role flows on the canvas", "Shipped", "E2E-verified with Playwright against the production build"],
+    ["Per-center branding + contrast guard", "Shipped", "Logo and color across the app shell and the branded sign-in page"],
+    ["Platform Portal + CSV report", "Shipped", "Stats, trend, one-step onboarding, 403 for non-super-admins"],
+    ["Prayer widget with time-of-day skies", "Shipped", "Day / evening / night; dashboards and the landing page"],
+    ["WCAG AA token audit", "Shipped", "Gold 2.41→5.15, amber 4.16→5.02, input borders 1.26→3.37"],
+    ["Stripe payments + per-center currency", "Roadmap", "PRD FR-20/20a — Pay now is a demo action today"],
+    ["Email notifications", "Roadmap", "PRD FR-26 — email-first channel decision recorded"],
+    ["Attendance reports · forms module · events month view", "Roadmap", "PRD backlog"],
+  ]}
+/>
+
+Demo logins live in `CREDENTIALS.md` (every password is `tarbiyah123`); the app runs at `http://localhost:3199`. The product requirements document is `docs/PRD.md`.
