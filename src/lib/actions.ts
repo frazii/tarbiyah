@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "./db";
 import { createSession, destroySession, requireUser, requireRole, isAdmin, isStaff } from "./auth";
+import { contrastWithWhite } from "./branding";
 
 // ---------- Auth ----------
 
@@ -292,7 +293,11 @@ export async function updateCenterBranding(formData: FormData) {
 
   const color = String(formData.get("brandColor") ?? "").trim();
   if (formData.get("clearColor") === "on") data.brandColor = null;
-  else if (/^#[0-9a-fA-F]{6}$/.test(color)) data.brandColor = color.toLowerCase();
+  else if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    // Brand color carries white button text and acts as text on white — hold it to WCAG AA.
+    if (contrastWithWhite(color) < 4.5) redirect("/admin?branding=lowcontrast");
+    data.brandColor = color.toLowerCase();
+  }
 
   const logo = formData.get("logo");
   if (formData.get("clearLogo") === "on") {
@@ -312,21 +317,54 @@ export async function updateCenterBranding(formData: FormData) {
   redirect("/admin?branding=saved");
 }
 
+async function uniqueSlug(name: string): Promise<string> {
+  const base = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  let slug = base;
+  for (let n = 2; await prisma.center.findUnique({ where: { slug } }); n++) slug = `${base}-${n}`;
+  return slug;
+}
+
+function centerData(formData: FormData) {
+  return {
+    address: String(formData.get("address") ?? "").trim() || null,
+    city: String(formData.get("city")).trim(),
+    country: String(formData.get("country")).trim(),
+    latitude: parseFloat(String(formData.get("latitude"))) || 0,
+    longitude: parseFloat(String(formData.get("longitude"))) || 0,
+    calcMethod: parseInt(String(formData.get("calcMethod"))) || 3,
+  };
+}
+
 export async function createCenter(formData: FormData) {
   await requireRole("SUPER_ADMIN");
   const name = String(formData.get("name")).trim();
   await prisma.center.create({
-    data: {
-      name,
-      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
-      address: String(formData.get("address") ?? "").trim() || null,
-      city: String(formData.get("city")).trim(),
-      country: String(formData.get("country")).trim(),
-      latitude: parseFloat(String(formData.get("latitude"))) || 0,
-      longitude: parseFloat(String(formData.get("longitude"))) || 0,
-      calcMethod: parseInt(String(formData.get("calcMethod"))) || 3,
-    },
+    data: { name, slug: await uniqueSlug(name), ...centerData(formData) },
   });
   revalidatePath("/admin");
   redirect("/admin");
+}
+
+export async function onboardCenter(formData: FormData) {
+  await requireRole("SUPER_ADMIN");
+  const name = String(formData.get("name")).trim();
+  const adminEmail = String(formData.get("adminEmail")).trim().toLowerCase();
+  if (await prisma.user.findUnique({ where: { email: adminEmail } })) {
+    redirect("/portal?onboard=emailtaken");
+  }
+  const center = await prisma.center.create({
+    data: { name, slug: await uniqueSlug(name), ...centerData(formData) },
+  });
+  await prisma.user.create({
+    data: {
+      name: String(formData.get("adminName")).trim(),
+      email: adminEmail,
+      passwordHash: await bcrypt.hash(String(formData.get("adminPassword")), 10),
+      role: "ADMIN",
+      centerId: center.id,
+    },
+  });
+  revalidatePath("/portal");
+  revalidatePath("/admin");
+  redirect(`/portal?onboarded=${center.slug}`);
 }

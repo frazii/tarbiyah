@@ -33,6 +33,15 @@ export function navForRole(role: string): NavItem[] {
 
   if (role === "PARENT") return [...base, ...parent, ...utilities];
   if (role === "TEACHER") return [...base, ...staff, ...utilities];
+  if (role === "SUPER_ADMIN") {
+    return [
+      ...base,
+      { href: "/portal", label: "Platform Portal", icon: "portal" },
+      ...staff,
+      ...utilities,
+      ...admin,
+    ];
+  }
   return [...base, ...staff, ...utilities, ...admin];
 }
 

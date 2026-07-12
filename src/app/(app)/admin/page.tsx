@@ -1,9 +1,10 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
 import { centerScope } from "@/lib/scope";
 import { createCenter, createUser, updateCenterBranding } from "@/lib/actions";
 import { CALC_METHODS, ROLE_LABELS, type Role } from "@/lib/constants";
-import { Badge, Card, Field, PageHeader, btnPrimary, inputCls } from "@/components/ui";
+import { Badge, Card, Field, PageHeader, btnGhost, btnPrimary, inputCls } from "@/components/ui";
 
 export default async function AdminPage({
   searchParams,
@@ -32,6 +33,13 @@ export default async function AdminPage({
         title="Administration"
         arabic="الإدارة"
         subtitle={isSuper ? "Manage centers and accounts across the platform" : `Manage accounts at ${user.center?.name}`}
+        action={
+          isSuper ? (
+            <Link href="/portal" className={btnGhost}>
+              Platform Portal →
+            </Link>
+          ) : undefined
+        }
       />
 
       {isSuper && (
@@ -91,6 +99,12 @@ export default async function AdminPage({
         <p className="mb-3 rounded-lg bg-primary-soft px-4 py-3 text-sm font-semibold text-primary-dark">
           Branding saved. Your center&rsquo;s logo and color now appear across the app and on your
           sign-in page.
+        </p>
+      )}
+      {branding === "lowcontrast" && (
+        <p className="mb-3 rounded-lg bg-danger-soft px-4 py-3 text-sm text-danger">
+          That color is too light to read against white (WCAG needs 4.5:1 contrast). Pick a darker
+          shade and save again — nothing was changed.
         </p>
       )}
       {branding === "invalid" && (

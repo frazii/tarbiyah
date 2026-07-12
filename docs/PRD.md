@@ -74,6 +74,19 @@ Priority: **P0** = must have (MVP), **P1** = should have, **P2** = later.
   app shell for everyone at that center (staff and parents) and on the center's own
   sign-in page (`/login?center=<slug>`), which shows the logo, center name and brand
   color. Derived shades (hover, soft tints) are computed from the single brand color.
+- **FR-6b (P0)** Brand-color contrast guard (shipped 12 Jul 2026): saving a brand color
+  that falls below WCAG AA (4.5:1 contrast against white) is rejected with a clear
+  message and nothing is changed.
+- **FR-6c (P0)** Super-admin Platform Portal (shipped 12 Jul 2026) at `/portal`:
+  - One-step onboarding: create a center **and** its first admin account together;
+    success banner shows the branded sign-in link to share. Duplicate admin emails are
+    rejected; center slugs are de-duplicated automatically.
+  - Platform stats: total centers, students, staff, parents, 30-day attendance rate and
+    fees collected, plus an 8-week attendance-trend chart.
+  - Per-center 30-day report table: students, classes, staff, parents, attendance rate
+    (color-coded ≥85% green / ≥70% amber / else red), absence notices, fees collected
+    and outstanding, with a link to each center's sign-in page.
+  - CSV export at `/portal/report` (super admin only; 403 otherwise).
 
 ### 4.3 Students & classes
 - **FR-7 (P0)** Admins create/edit students: name, gender, DOB, medical notes, linked

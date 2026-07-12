@@ -39,6 +39,12 @@ const PATHS: Record<string, React.ReactNode> = {
       <path d="M15.5 8.5l-2 5-5 2 2-5z" />
     </>
   ),
+  portal: (
+    <>
+      <path d="M3 21h18M5 21V8l7-4.5L19 8v13M9.5 21v-4.5h5V21" />
+      <path d="M9 11h.01M15 11h.01M9 14.5h.01M15 14.5h.01" />
+    </>
+  ),
   admin: (
     <>
       <circle cx="12" cy="12" r="3" />

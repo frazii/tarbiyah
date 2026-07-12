@@ -28,6 +28,12 @@ App URL (local): **http://localhost:3199** (production build) or `pnpm dev` → 
 | `bilal@alfalah.example` | Teacher | Ustadh Bilal Khan — Qur'an Foundation |
 | `parent@alfalah.example` | Parent | Aisha Begum — child: Yahya |
 
+## Darul Ilm Institute (Brisbane, Australia) — onboarded via Platform Portal
+
+| Email | Role | Notes |
+| --- | --- | --- |
+| `admin@darulilm.example` | Center Admin | Bilal Khan — created through Portal → Onboard a center (not in the seed) |
+
 ## Notes
 
 - These are **seeded demo accounts** (`pnpm db:seed` recreates them and resets all data).
