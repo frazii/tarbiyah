@@ -1,0 +1,57 @@
+---
+title: "Tarbiyah — whole-app overview & user flows"
+kind: plan
+localOnly: true
+---
+
+## What Tarbiyah is
+
+A multi-center management platform for Islamic teaching centers (madrasah/maktab),
+modelled on School Bytes: enrolment, classes, attendance, fees, hifz/tilawah
+progress, behaviour (akhlaq), announcements, events with digital permission slips,
+plus two Islamic utilities — Adhan timings (AlAdhan API, per-center coordinates and
+calculation method) and a Qibla locator (device compass + great-circle bearing).
+Four roles: Super Admin (platform), Center Admin, Teacher, Parent. Every query is
+tenant-scoped through `centerScope(user)`; super admins see all centers.
+
+## Architecture
+
+Next.js 16 App Router + TypeScript. Server components render pages; all writes are
+server actions in `src/lib/actions.ts` (plain `<form action>`). Prisma 6 + SQLite
+(`prisma/dev.db`). Cookie sessions (`tarbiyah_session`, bcrypt hashes, DB Session
+table) via `src/lib/auth.ts` (`requireUser` / `requireRole`). Per-center theming:
+logo (base64 in DB) + brand color remapped through CSS custom properties in
+`src/lib/branding.ts`, with a WCAG 4.5:1 guard on save. UI kit in
+`src/components/ui.tsx`; shell + role-aware nav in `src/components/Shell.tsx`.
+
+## User flows (see canvas)
+
+1. **Visitor → member**: Landing `/` (hero, prayer strip, modules) → `/login`
+   (or branded `/login?center=<slug>`) → role-aware `/dashboard`.
+2. **Parent**: dashboard (children cards, prayer strip) → child profile
+   `/students/[id]` (attendance calendar, report absence) → `/fees` Pay now →
+   `/events/[id]` permission yes/no → `/announcements`, `/prayer-times`, `/qibla`.
+3. **Teacher**: dashboard → `/attendance` (pick class + date; parent absence
+   notices pre-fill EXCUSED) → save roll → `/students/[id]` record progress
+   (surah/ayah/grade) & behaviour → `/announcements` / `/events` create.
+4. **Center Admin**: everything teachers do plus `/students/new`, `/classes/new`,
+   `/fees` invoices, `/admin` (accounts, branding upload + color, share sign-in
+   link).
+5. **Super Admin**: `/portal` (platform stats, 8-week attendance trend, one-step
+   center + admin onboarding, per-center 30-day report, CSV export at
+   `/portal/report`) → `/admin` (centers, all accounts, branding for any center).
+
+## Data model (Prisma)
+
+Center → User (role), Student (parent, class), ClassRoom (teacher),
+AttendanceRecord (unique per student/class/date), AbsenceNotice, Invoice
+(PENDING|PAID), Announcement, Event → PermissionResponse (unique per
+event/student), ProgressRecord (HIFZ|TILAWAH|ISLAMIC_STUDIES|ARABIC),
+BehaviorNote, Session.
+
+## Shipped vs roadmap
+
+Shipped: all flows above, per-center branding, brand contrast guard, platform
+portal, prayer widget with time-of-day skies, WCAG AA token audit.
+Roadmap (PRD §9–10): Stripe payments + per-center currency, email notifications,
+attendance reports for admins, forms module, events calendar month view.
