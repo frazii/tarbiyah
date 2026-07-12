@@ -57,13 +57,7 @@ export default async function Home() {
 
       {/* Prayer times band */}
       <section className="pattern-band px-4 py-10 sm:px-6">
-        <div className="mx-auto max-w-4xl rounded-2xl bg-white p-6 shadow-lg sm:p-8">
-          <div className="mb-1 flex items-baseline justify-between">
-            <h2 className="font-display text-xl text-ink">Today&rsquo;s Adhan timings</h2>
-            <span className="font-arabic text-lg text-gold" dir="rtl">
-              مواقيت الصلاة
-            </span>
-          </div>
+        <div className="mx-auto max-w-4xl rounded-xl bg-white p-1.5 shadow-lg">
           <PrayerTimes />
         </div>
       </section>

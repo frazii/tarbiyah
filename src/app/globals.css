@@ -54,6 +54,17 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg width='48' height='48' viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23046a38' stroke-opacity='0.08' stroke-width='1'%3E%3Cpath d='M24 4l4.7 10.6L40 10l-4.6 11.3L46 24l-10.6 2.7L40 38l-11.3-4.6L24 44l-2.7-10.6L10 38l4.6-11.3L4 24l10.6-4.7L10 10l11.3 4.6z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* Prayer widget time-of-day skies */
+.sky-day {
+  background: linear-gradient(105deg, var(--color-secondary-soft), #ffffff 70%);
+}
+.sky-evening {
+  background: linear-gradient(105deg, var(--color-gold-soft), var(--color-amber-soft) 70%);
+}
+.sky-night {
+  background: linear-gradient(105deg, var(--color-ink), var(--color-primary-dark));
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

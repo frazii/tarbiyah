@@ -1,0 +1,51 @@
+<DesignBoard>
+  <Section title="Widget states — day, evening, night">
+    <Artboard id="widget-day" title="Day (Sunrise → Asr)" x={0} y={0}>
+      <Screen
+        surface="panel"
+        html={"<div style=\"display:flex;flex-direction:column;gap:10px;padding:16px;height:100%;box-sizing:border-box\"><small class=\"wf-muted\">Utility strip · ~72px tall</small><div class=\"wf-card\" style=\"display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 14px;background:var(--wf-accent-soft)\"><div style=\"display:flex;flex-direction:column;min-width:104px\"><strong>11:42 AM</strong><small class=\"wf-muted\">Sat 12 Jul · 26 Muharram</small></div><div style=\"width:1.4px;align-self:stretch;background:var(--wf-line)\"></div><div style=\"display:flex;flex-direction:column\"><small class=\"wf-muted\">NEXT · الظهر</small><strong style=\"font-size:21px\">Dhuhr 12:04 PM</strong><small>in 22m</small></div><div style=\"flex:1\"></div><div style=\"display:flex;gap:6px;white-space:nowrap\"><span class=\"wf-pill\">Fajr 5:58</span><span class=\"wf-pill\">Asr 3:05</span><span class=\"wf-pill\">Maghrib 5:41</span><span class=\"wf-pill\">Isha 7:02</span></div></div><small class=\"wf-muted\">Soft daylight wash (secondary-soft → white). Next prayer is the only large text.</small></div>"}
+      />
+    </Artboard>
+    <Annotation targetId="widget-day" placement="top">
+      One row: live clock + dates, then the next prayer big with a countdown,
+      then the other four prayers as quiet chips. No card heading — the strip is
+      self-labelling.
+    </Annotation>
+
+    <Artboard id="widget-evening" title="Evening (Asr → Isha)" x={0} y={1400}>
+      <Screen
+        surface="panel"
+        html={"<div style=\"display:flex;flex-direction:column;gap:10px;padding:16px;height:100%;box-sizing:border-box\"><small class=\"wf-muted\">Same layout, warm dusk wash</small><div class=\"wf-card\" style=\"display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 14px;background:var(--wf-warn)\"><div style=\"display:flex;flex-direction:column;min-width:104px\"><strong>5:12 PM</strong><small class=\"wf-muted\">Sat 12 Jul · 26 Muharram</small></div><div style=\"width:1.4px;align-self:stretch;background:var(--wf-line)\"></div><div style=\"display:flex;flex-direction:column\"><small class=\"wf-muted\">NEXT · المغرب</small><strong style=\"font-size:21px\">Maghrib 5:41 PM</strong><small>in 29m</small></div><div style=\"flex:1\"></div><div style=\"display:flex;gap:6px;white-space:nowrap\"><span class=\"wf-pill\">Fajr 5:58</span><span class=\"wf-pill\">Dhuhr 12:04</span><span class=\"wf-pill\">Asr 3:05</span><span class=\"wf-pill\">Isha 7:02</span></div></div><small class=\"wf-muted\">Gold-soft → amber-soft wash between Asr and Isha.</small></div>"}
+      />
+    </Artboard>
+    <Annotation targetId="widget-evening" placement="right">
+      The wash is the only thing that changes between periods — layout and
+      hierarchy stay identical so the eye always lands in the same place.
+    </Annotation>
+
+    <Artboard id="widget-night" title="Night (Isha → Sunrise, incl. pre-dawn Fajr)" x={0} y={2800}>
+      <Screen
+        surface="panel"
+        html={"<div style=\"display:flex;flex-direction:column;gap:10px;padding:16px;height:100%;box-sizing:border-box\"><small class=\"wf-muted\">Night: dark gradient, inverted text</small><div style=\"display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 14px;border-radius:var(--wf-radius);background:var(--wf-ink);color:var(--wf-paper)\"><div style=\"display:flex;flex-direction:column;min-width:104px\"><strong>9:38 PM</strong><small style=\"opacity:.75\">Sat 12 Jul · 26 Muharram</small></div><div style=\"width:1.4px;align-self:stretch;background:var(--wf-paper);opacity:.3\"></div><div style=\"display:flex;flex-direction:column\"><small style=\"opacity:.75\">NEXT · الفجر</small><strong style=\"font-size:21px\">Fajr 5:58 AM</strong><small style=\"opacity:.75\">in 8h 20m</small></div><div style=\"flex:1\"></div><div style=\"display:flex;gap:6px;white-space:nowrap\"><span style=\"border:1.4px solid var(--wf-paper);opacity:.85;border-radius:999px;padding:3px 10px\"><small>Dhuhr 12:04</small></span><span style=\"border:1.4px solid var(--wf-paper);opacity:.85;border-radius:999px;padding:3px 10px\"><small>Asr 3:05</small></span><span style=\"border:1.4px solid var(--wf-paper);opacity:.85;border-radius:999px;padding:3px 10px\"><small>Maghrib 5:41</small></span><span style=\"border:1.4px solid var(--wf-paper);opacity:.85;border-radius:999px;padding:3px 10px\"><small>Isha 7:02</small></span></div></div><small class=\"wf-muted\">ink → primary-dark gradient; white text and chips re-checked for 4.5:1 contrast.</small></div>"}
+      />
+    </Artboard>
+    <Annotation targetId="widget-night" placement="right">
+      After Isha and before Sunrise. Pre-dawn Fajr correctly appears on the
+      night sky with a long countdown.
+    </Annotation>
+  </Section>
+
+  <Section title="Dashboard placement — subtle, not a card">
+    <Artboard id="dashboard-context" title="Parent dashboard with the strip" x={1400} y={0}>
+      <Screen
+        surface="browser"
+        html={"<div style=\"display:flex;flex-direction:column;gap:12px;padding:16px;height:100%;box-sizing:border-box\"><div style=\"display:flex;align-items:center;width:100%;gap:10px;padding-bottom:10px;border-bottom:1.4px solid var(--wf-line)\"><strong>Tarbiyah</strong><div style=\"flex:1\"></div><small class=\"wf-muted\">Fatima Ali · Parent</small><span data-icon=\"user\" aria-label=\"Account\"></span></div><h2>As-salamu alaykum, Fatima</h2><div style=\"display:flex;gap:8px\"><span class=\"wf-pill\">Announcements</span><span class=\"wf-pill\">Events</span><span class=\"wf-pill\">Fees</span><span class=\"wf-pill\">Prayer Times</span></div><div class=\"wf-card\" style=\"display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 14px;background:var(--wf-accent-soft)\"><div style=\"display:flex;flex-direction:column;min-width:96px\"><strong>11:42 AM</strong><small class=\"wf-muted\">12 Jul · 26 Muharram</small></div><div style=\"display:flex;flex-direction:column\"><small class=\"wf-muted\">NEXT</small><strong>Dhuhr 12:04 PM · in 22m</strong></div><div style=\"flex:1\"></div><small class=\"wf-muted\" style=\"white-space:nowrap\">Fajr 5:58 · Asr 3:05 · Maghrib 5:41 · Isha 7:02</small></div><h3>Your children</h3><div style=\"display:flex;gap:12px;flex:1\"><div class=\"wf-card\" style=\"flex:1;display:flex;flex-direction:column;gap:6px\"><strong>Zayd Ali</strong><small class=\"wf-muted\">Hifz Level 1</small><span class=\"wf-pill\">Present 12 Jul</span></div><div class=\"wf-card\" style=\"flex:1;display:flex;flex-direction:column;gap:6px\"><strong>Ruqayyah Ali</strong><small class=\"wf-muted\">Tajweed &amp; Tilawah</small><span class=\"wf-pill\">Present 12 Jul</span></div></div></div>"}
+      />
+    </Artboard>
+    <Annotation targetId="dashboard-context" placement="bottom">
+      Before: a full Card titled "Today's Adhan timings" with five equal arch
+      tiles. After: this single strip between the module tiles and the content —
+      the children cards stay the page's main event.
+    </Annotation>
+  </Section>
+</DesignBoard>

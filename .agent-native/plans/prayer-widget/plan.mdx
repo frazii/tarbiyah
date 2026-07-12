@@ -1,0 +1,159 @@
+---
+title: "Prayer times — subtle utility widget"
+kind: plan
+localOnly: true
+---
+
+## Objective
+
+The dashboard's prayer-times section becomes a slim, glanceable **utility strip**
+instead of a tall card: the **next prayer is the visual anchor** (large time +
+countdown), the remaining four prayers shrink to small secondary chips, the strip's
+background subtly reflects the **actual time of day** (day / evening / night,
+derived from today's timings), and the **current date and clock** sit beside the
+prayer times so a user can cross-check at a glance. Done means: the widget is one
+row (~72 px on desktop, wrapping on mobile), reads correctly in all three period
+backgrounds at WCAG AA contrast, and the dashboard no longer devotes a full card
+with five arch tiles to prayer times.
+
+The dedicated `/prayer-times` page keeps its detailed five-arch grid — this plan
+only slims the widget form used on dashboards.
+
+## Current state
+
+`src/components/PrayerTimes.tsx` is a client component that already does the hard
+work: geolocation with a Makkah fallback, an AlAdhan `timings` fetch keyed by
+center coordinates + calc method, a Hijri date, a 30-second ticker, and a
+`nextPrayer` memo (name + minutes until). Today it renders all five prayers as
+equal-weight arch tiles inside a `Card` titled "Today's Adhan timings" on both
+dashboard variants (`src/app/(app)/dashboard/page.tsx` lines ~53 and ~221) and on
+`/prayer-times`.
+
+## Approach
+
+**Reuse:** the fetch, geolocation fallback, `nextPrayer` memo, Hijri string, and
+30-second ticker stay exactly as they are. The change is presentational plus one
+new derived value.
+
+**New — day period.** Derive `period: "day" | "evening" | "night"` from the
+fetched timings and `now`: Sunrise→Asr = `day`, Asr→Isha = `evening`,
+Isha→Sunrise = `night` (so pre-dawn Fajr correctly shows the night background).
+Recompute in the same memo pass as `nextPrayer`.
+
+**New — sky backgrounds.** Three utility classes in `src/app/globals.css`, built
+from existing theme tokens so per-center branding still harmonises:
+
+- `.sky-day` — very soft blue wash (`secondary-soft` → white gradient), ink text.
+- `.sky-evening` — warm gold wash (`gold-soft` → `amber-soft`), ink text.
+- `.sky-night` — deep gradient (`ink` → `primary-dark`), white/near-white text;
+  gold accents stay ≥ 4.5:1 on it (verified in the contrast step).
+
+**New — widget layout.** `PrayerTimes` gains `variant: "widget" | "full"`
+(default `widget`; `full` preserves today's arch-tile grid for `/prayer-times`).
+The widget is a single rounded strip, one flex row that wraps at small widths:
+
+1. **Clock block** — current time (`3:42 PM`, minute precision), then the
+   Gregorian date and Hijri date in small muted text.
+2. **Next prayer block** — small "NEXT" label with the Arabic name, the prayer
+   name + time in display type (the only large text in the strip), and the
+   countdown ("in 23m").
+3. **Other prayers** — the remaining four as small name+time chips, pushed to the
+   right on desktop, wrapping under on mobile.
+
+**Dashboard placement.** Replace the `Card` + "Today's Adhan timings" heading on
+both dashboard variants with the bare widget strip — no card wrapper, no heading;
+the strip is self-labelling. It stays where the card is today (below the module
+tiles for parents, below stats for staff).
+
+<Callout tone="decision" title="Decisions (12 Jul 2026)">
+Night = deep dark gradient with white text. Clock = minute precision, 30 s tick.
+The public landing page (`src/app/page.tsx`) also adopts the widget, replacing its
+large "Today's Adhan timings" card.
+</Callout>
+
+## Files touched
+
+- `src/components/PrayerTimes.tsx` — add `period` derivation, `variant` prop,
+  widget layout; keep the existing `full` rendering path.
+- `src/app/globals.css` — `.sky-day`, `.sky-evening`, `.sky-night`.
+- `src/app/(app)/dashboard/page.tsx` — both usages: drop the wrapping `Card` and
+  heading, render `<PrayerTimes … />` (widget default).
+- `src/app/(app)/prayer-times/page.tsx` — pass `variant="full"` to both usages.
+- `src/app/page.tsx` — landing page: replace the white prayer-times card inside the
+  pattern band with the bare widget strip.
+
+<AnnotatedCode
+  language="tsx"
+  filename="src/components/PrayerTimes.tsx (planned delta)"
+  code={"const periodOf = (t: Timings, now: Date): \"day\" | \"evening\" | \"night\" => {\n  const min = (s: string) => { const [h, m] = s.split(\":\").map(Number); return h * 60 + m; };\n  const n = now.getHours() * 60 + now.getMinutes();\n  if (n >= min(t.Sunrise) && n < min(t.Asr)) return \"day\";\n  if (n >= min(t.Asr) && n < min(t.Isha)) return \"evening\";\n  return \"night\";\n};\n\nconst SKY: Record<Period, string> = {\n  day: \"sky-day text-ink\",\n  evening: \"sky-evening text-ink\",\n  night: \"sky-night text-white\",\n};\n\n// widget variant (default)\n<div className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line px-4 py-3 ${SKY[period]}`}>\n  <div className=\"min-w-[110px]\">\n    <p className=\"font-display text-lg leading-tight\">{clock}</p>\n    <p className=\"text-xs opacity-75\">{gregorian} · {hijri}</p>\n  </div>\n  <div>\n    <p className=\"text-[10px] font-semibold uppercase tracking-wide opacity-75\">Next · <span className=\"font-arabic\" dir=\"rtl\">{ARABIC[next.name]}</span></p>\n    <p className=\"font-display text-2xl leading-tight\">{next.name} {timings[next.name]}</p>\n    <p className=\"text-xs opacity-75\">in {countdown}</p>\n  </div>\n  <div className=\"ms-auto flex flex-wrap gap-1.5\">\n    {others.map((p) => (\n      <span key={p} className=\"rounded-full border border-current/20 px-2.5 py-1 text-xs\">\n        <span className=\"font-semibold\">{p}</span> {timings[p]}\n      </span>\n    ))}\n  </div>\n</div>"}
+  annotations={[
+    { lines: "1-7", label: "period", note: "Sunrise→Asr day, Asr→Isha evening, else night — pre-dawn Fajr renders on the night sky." },
+    { lines: "9-13", label: "sky classes", note: "Only the night sky flips text to white; day/evening are washes under normal ink text." },
+    { lines: "16-20", label: "clock block", note: "Current time at minute precision from the existing 30 s ticker; date + Hijri underneath for cross-checking." },
+    { lines: "21-25", label: "the one big thing", note: "Next prayer is the only display-size text in the strip." },
+    { lines: "26-32", label: "small chips", note: "Remaining prayers are quiet text chips using currentColor so they work on all three skies." }
+  ]}
+/>
+
+<Callout tone="decision" title="Kept deliberately small">
+No schema, action, or API changes. No new dependencies. The AlAdhan fetch,
+geolocation fallback and per-center coordinates are untouched — this is a
+presentation-layer change plus one derived value.
+</Callout>
+
+## Risks
+
+- **Night-sky contrast.** White text and gold Arabic on the dark gradient must be
+  re-checked with the same WCAG script used for the token audit; adjust the
+  gradient's light end rather than the text if a pair fails.
+- **Branded centers.** `--color-primary-dark` participates in `.sky-night`, so a
+  center brand color changes the night sky. That is intended (subtle brand
+  harmony), but a very light brand color could weaken contrast — the existing
+  4.5:1 brand-color guard already prevents light brands from being saved.
+- **Clock drift.** The 30 s ticker means the clock can lag up to 29 s; acceptable
+  at minute precision (see Open Questions).
+
+## Verification
+
+1. `pnpm build`, restart on port 3199.
+2. Playwright: sign in as `parent@alnoor.example` and `ahmad@alnoor.example`;
+   confirm the dashboard shows the strip (no card/heading), next prayer is the
+   largest text, and the remaining four render as chips.
+3. Force each period by stubbing `Date` in the browser console (evening, night,
+   pre-dawn Fajr) and screenshot all three skies; run the contrast script on the
+   night-sky text pairs.
+4. 390 px viewport: strip wraps to two rows without clipping.
+5. `/prayer-times` still renders the full arch grid for both location cards.
+
+<QuestionForm
+  title="Open Questions"
+  questions={[
+    {
+      id: "night-style",
+      title: "Night background treatment",
+      mode: "single",
+      options: [
+        { id: "dark", label: "Deep dark gradient, white text", detail: "ink → primary-dark; strongest day/night storytelling", recommended: true },
+        { id: "light", label: "Stay light with a dusky blue wash", detail: "secondary-soft tint; quieter, no inverted text to maintain" }
+      ]
+    },
+    {
+      id: "clock",
+      title: "Clock precision",
+      mode: "single",
+      options: [
+        { id: "minutes", label: "Minutes, tick every 30 s", detail: "matches prayer-time precision; no visible churn", recommended: true },
+        { id: "seconds", label: "Show seconds, tick every 1 s", detail: "livelier but adds constant re-render and visual noise" }
+      ]
+    },
+    {
+      id: "landing",
+      title: "Also use the widget on the public landing page (src/app/page.tsx)?",
+      mode: "single",
+      options: [
+        { id: "no", label: "Not in this change", detail: "landing page keeps its current presentation", recommended: true },
+        { id: "yes", label: "Yes, swap it there too", detail: "one more usage to restyle and verify" }
+      ]
+    }
+  ]}
+/>

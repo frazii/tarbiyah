@@ -19,18 +19,40 @@ type AlAdhanData = {
   meta: { timezone: string };
 };
 
+const toMin = (s: string) => {
+  const [h, m] = s.split(":").map(Number);
+  return h * 60 + m;
+};
+
+const fmt12 = (s: string) => {
+  const [h, m] = s.split(":").map(Number);
+  const hour = h % 12 === 0 ? 12 : h % 12;
+  return `${hour}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+};
+
+type Period = "day" | "evening" | "night";
+
+function periodOf(t: Timings, now: Date): Period {
+  const n = now.getHours() * 60 + now.getMinutes();
+  if (n >= toMin(t.Sunrise) && n < toMin(t.Asr)) return "day";
+  if (n >= toMin(t.Asr) && n < toMin(t.Isha)) return "evening";
+  return "night";
+}
+
 export function PrayerTimes({
   latitude,
   longitude,
   method = 3,
   locationLabel,
   compact = false,
+  variant = "widget",
 }: {
   latitude?: number;
   longitude?: number;
   method?: number;
   locationLabel?: string;
   compact?: boolean;
+  variant?: "widget" | "full";
 }) {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     latitude != null && longitude != null ? { lat: latitude, lng: longitude } : null
@@ -96,6 +118,62 @@ export function PrayerTimes({
     );
 
   const hijri = `${data.date.hijri.day} ${data.date.hijri.month.en} ${data.date.hijri.year} AH`;
+
+  if (variant === "widget" && nextPrayer) {
+    const period = periodOf(data.timings, now);
+    const night = period === "night";
+    const sky = {
+      day: "sky-day border-line text-ink",
+      evening: "sky-evening border-line text-ink",
+      night: "sky-night border-transparent text-white",
+    }[period];
+    const soft = night ? "text-white/75" : "text-ink-soft";
+    const others = PRAYERS.filter((p) => p !== nextPrayer.name);
+    const clock = fmt12(`${now.getHours()}:${now.getMinutes()}`);
+    const dateLine = now.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" });
+
+    return (
+      <div className={`flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border px-4 py-3 ${sky}`}>
+        <div className="min-w-[104px]">
+          <p className="font-display text-lg leading-tight">{clock}</p>
+          <p className={`text-xs ${soft}`}>
+            {dateLine} · <span className={night ? "text-gold-soft" : "text-gold"}>{hijri}</span>
+          </p>
+          {label && <p className={`text-[10px] ${soft}`}>{label}</p>}
+        </div>
+        <div className={`hidden w-px self-stretch sm:block ${night ? "bg-white/25" : "bg-line"}`} />
+        <div>
+          <p className={`text-[10px] font-semibold uppercase tracking-wide ${soft}`}>
+            Next{nextPrayer.minutes == null && " (tomorrow)"} ·{" "}
+            <span className={`font-arabic text-xs normal-case ${night ? "text-gold-soft" : "text-gold"}`} dir="rtl">
+              {ARABIC[nextPrayer.name]}
+            </span>
+          </p>
+          <p className="font-display text-2xl leading-tight">
+            {nextPrayer.name} {fmt12(data.timings[nextPrayer.name])}
+          </p>
+          {nextPrayer.minutes != null && (
+            <p className={`text-xs ${soft}`}>
+              in {Math.floor(nextPrayer.minutes / 60) > 0 ? `${Math.floor(nextPrayer.minutes / 60)}h ` : ""}
+              {nextPrayer.minutes % 60}m
+            </p>
+          )}
+        </div>
+        <div className="ms-auto flex flex-wrap gap-1.5">
+          {others.map((p) => (
+            <span
+              key={p}
+              className={`rounded-full border px-2.5 py-1 text-xs ${
+                night ? "border-white/40 text-white/90" : "border-line-strong bg-white/60 text-ink"
+              }`}
+            >
+              <span className="font-semibold">{p}</span> {fmt12(data.timings[p])}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

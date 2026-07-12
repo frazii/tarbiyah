@@ -15,12 +15,13 @@ export default async function PrayerTimesPage() {
       />
       <Card>
         <h2 className="mb-3 font-display text-lg">Your location</h2>
-        <PrayerTimes />
+        <PrayerTimes variant="full" />
       </Card>
       {center && (
         <Card className="mt-4">
           <h2 className="mb-3 font-display text-lg">{center.name}</h2>
           <PrayerTimes
+            variant="full"
             latitude={center.latitude}
             longitude={center.longitude}
             method={center.calcMethod}

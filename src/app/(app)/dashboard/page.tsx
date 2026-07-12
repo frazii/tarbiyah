@@ -50,15 +50,14 @@ export default async function DashboardPage() {
         <div className="mb-6">
           <ModuleTiles nav={navForRole(user.role)} />
         </div>
-        <Card className="mb-6">
-          <h2 className="mb-3 font-display text-lg">Today&rsquo;s Adhan timings</h2>
+        <div className="mb-6">
           <PrayerTimes
             latitude={center?.latitude}
             longitude={center?.longitude}
             method={center?.calcMethod}
             locationLabel={center ? `${center.city}, ${center.country}` : undefined}
           />
-        </Card>
+        </div>
 
         <h2 className="mb-3 font-display text-xl">Your children</h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -218,15 +217,14 @@ export default async function DashboardPage() {
         <ModuleTiles nav={navForRole(user.role)} />
       </div>
 
-      <Card className="mt-6">
-        <h2 className="mb-3 font-display text-lg">Today&rsquo;s Adhan timings</h2>
+      <div className="mt-6">
         <PrayerTimes
           latitude={center?.latitude}
           longitude={center?.longitude}
           method={center?.calcMethod}
           locationLabel={center ? `${center.city}, ${center.country}` : undefined}
         />
-      </Card>
+      </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
