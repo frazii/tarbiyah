@@ -42,3 +42,9 @@ next-env.d.ts
 .devswarm-temp/
 .playwright-mcp/
 prisma/dev.db
+
+# agent scratch — .plan-url holds a live local bridge token
+.agent-native/**/.plan-url
+
+# machine-local Claude Code settings (launch.json is shared)
+.claude/settings.local.json
